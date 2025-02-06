@@ -1,7 +1,7 @@
 /*
 Created: Alan Long Jun 20 2019
 Edited: Alan Long Mar 02 2021
-Edited: Ethan Mullen Jan 28 2025
+Edited: Ethan Mullen Feb 06 2025
 
 This code simulates our mean-field model exactly. 
 ***IMPORTANT!!!***
@@ -43,14 +43,15 @@ int main(int argc, char* argv[])
 {
 	cxxopts::Options options("MyProgram", "A simple program with default arguments.");
 
+	// NOTE: You can add options with only long flags (like jobid and taskid here), but you can't use short flags of more than one letter (so a short flag can't be something like -jid)
     options.add_options()
         ("t,time", "Simulation timesteps", cxxopts::value<int>()->default_value("1000"))
         ("s,size", "Simulation size (num of cells)", cxxopts::value<int>()->default_value("1000"))
         ("r,rate", "Strain rate", cxxopts::value<double>()->default_value("0.0"))
         ("d,disorder", "Disorder width", cxxopts::value<double>()->default_value("0.05"))
         ("w,weakening", "Weakening (epsilon)", cxxopts::value<double>()->default_value("0.0"))
-		("jid,jobid", "Job (array) ID", cxxopts::value<double>()->default_value("0"))
-		("tid,taskid", "Job array taskid", cxxopts::value<double>()->default_value("0"));
+		("jobid", "Job (array) ID", cxxopts::value<int>()->default_value("0"))
+		("taskid", "Job array taskid", cxxopts::value<int>()->default_value("0"));
 
     auto result = options.parse(argc, argv);
 
@@ -61,12 +62,16 @@ int main(int argc, char* argv[])
     double weakening = result["weakening"].as<double>();
 	int jobid = result["jobid"].as<int>();
 	int taskid = result["taskid"].as<int>();
+
+	std::string stress_filename;
+	std::string strain_filename;
+
 	if (taskid == 0){
-		std::string stress_filename = "stress_s=" + std::to_string(area) + "_r=" + std::to_string(rate) + "_d=" + std::to_string(w) + "_w=" + std::to_string(weakening) + "_jobid=" + std::to_string(jobid) + ".txt";
-		std::string strain_filename = "strain_s=" + std::to_string(area) + "_r=" + std::to_string(rate) + "_d=" + std::to_string(w) + "_w=" + std::to_string(weakening) + "_jobid=" + std::to_string(jobid) + ".txt";
+		stress_filename = "stress_s=" + std::to_string(area) + "_r=" + std::to_string(rate) + "_d=" + std::to_string(w) + "_w=" + std::to_string(weakening) + "_jobid=" + std::to_string(jobid) + ".txt";
+		strain_filename = "strain_s=" + std::to_string(area) + "_r=" + std::to_string(rate) + "_d=" + std::to_string(w) + "_w=" + std::to_string(weakening) + "_jobid=" + std::to_string(jobid) + ".txt";
 	} else{
-		std::string stress_filename = "stress_s=" + std::to_string(area) + "_r=" + std::to_string(rate) + "_d=" + std::to_string(w) + "_w=" + std::to_string(weakening) + "_jobarrayid=" + std::to_string(jobid) + "_taskid=" + std::to_string(taskid) + ".txt";
-		std::string strain_filename = "strain_s=" + std::to_string(area) + "_r=" + std::to_string(rate) + "_d=" + std::to_string(w) + "_w=" + std::to_string(weakening) + "_jobarrayid=" + std::to_string(jobid) + "_taskid=" + std::to_string(taskid) + ".txt";
+		stress_filename = "stress_s=" + std::to_string(area) + "_r=" + std::to_string(rate) + "_d=" + std::to_string(w) + "_w=" + std::to_string(weakening) + "_jobarrayid=" + std::to_string(jobid) + "_taskid=" + std::to_string(taskid) + ".txt";
+		strain_filename = "strain_s=" + std::to_string(area) + "_r=" + std::to_string(rate) + "_d=" + std::to_string(w) + "_w=" + std::to_string(weakening) + "_jobarrayid=" + std::to_string(jobid) + "_taskid=" + std::to_string(taskid) + ".txt";
 	}
 
 	double consv;
